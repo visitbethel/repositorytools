@@ -51,7 +51,7 @@ class NexusRepositoryClient(object):
     """
     DEFAULT_REPOSITORY_URL = 'https://repository'
 
-    def __init__(self, repository_url=None, user=None, password=None, verify_ssl=True):
+    def __init__(self, repository_url=None, user=None, password=None, verify_ssl=True, proxies=None):
         """
 
         :param repository_url: url to repository server
@@ -61,6 +61,7 @@ class NexusRepositoryClient(object):
         :return:
         """
         self._verify_ssl = verify_ssl
+        self._proxies = proxies
 
         if repository_url:
             self._repository_url = repository_url
@@ -219,7 +220,7 @@ class NexusRepositoryClient(object):
 
     def _send(self, path, method='GET', **kwargs):
         r = self._session.request(method, '{hostname}/{path}'.format(hostname=self._repository_url, path=path),
-                                  verify=self._verify_ssl,
+                                  verify=self._verify_ssl, proxies=self._proxies,
                                   **kwargs)
 
         logger.debug('response: %s', r.text)
@@ -233,7 +234,7 @@ class NexusRepositoryClient(object):
             data = None
         else:
             data = json.dumps(json_data)
-        r = self._send(path, data=data, headers=headers, method=method, params=params)
+        r = self._send(path, proxies=self._proxies, data=data, headers=headers, method=method, params=params)
 
         if r.text:
             return json.loads(r.text)
